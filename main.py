@@ -9,7 +9,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://python-api-production-a4ff.up.railway.app/"],  # Or specify your frontend domain here
+    allow_origins=["*"],  # Or specify your frontend domain here
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
