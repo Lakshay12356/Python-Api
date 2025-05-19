@@ -3,8 +3,17 @@ from pydantic import BaseModel, EmailStr
 from passlib.context import CryptContext
 from jose import jwt
 from datetime import datetime, timedelta
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://python-api-production-a4ff.up.railway.app/"],  # Or specify your frontend domain here
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 users_db = {}
 
