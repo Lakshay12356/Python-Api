@@ -1,6 +1,8 @@
 fastapi
-uvicorn
-gunicorn
-pydantic[email]
-python-jose[cryptography]
+uvicorn[standard]
+sqlalchemy
+psycopg2-binary
+python-dotenv
 passlib[bcrypt]
+python-jose
+gunicorn  
