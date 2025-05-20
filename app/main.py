@@ -5,6 +5,8 @@ from sqlalchemy.orm import Session
 from . import models, schemas, crud
 from .database import engine, SessionLocal
 from .auth import verify_password, create_token
+import os
+print("🚀 DATABASE_URL:", os.getenv("DATABASE_URL"))
 
 models.Base.metadata.create_all(bind=engine)
 
