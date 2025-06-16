@@ -1,5 +1,5 @@
 # app/models.py
-from sqlalchemy import Column, Integer, String, Float
+from sqlalchemy import Column, Integer, String, Float, Date, Boolean
 from .database import Base
 
 class User(Base):
@@ -21,3 +21,5 @@ class Product(Base):
     purchase_price = Column(Float)
     listing_price = Column(Float)
     units = Column(Integer)
+    date_of_purchase = Column(Date)
+    dead_stock = Column(Boolean, default=False)

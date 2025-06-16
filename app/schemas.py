@@ -1,5 +1,7 @@
 # app/schemas.py
 from pydantic import BaseModel, EmailStr
+from datetime import date
+from typing import Optional
 
 # Auth
 class UserCreate(BaseModel):
@@ -22,6 +24,8 @@ class ProductBase(BaseModel):
     purchase_price: float
     listing_price: float
     units: int
+    date_of_purchase: Optional[date] = None
+    dead_stock: Optional[bool] = False
 
 class ProductCreate(ProductBase):
     pass
