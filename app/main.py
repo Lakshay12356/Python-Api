@@ -1,27 +1,27 @@
-# app/main.py
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
+from jose import JWTError, jwt
+
 from . import models, schemas, crud
 from .database import engine, SessionLocal
-from .auth import verify_password, create_token
-import os
-print("🚀 DATABASE_URL:", os.getenv("DATABASE_URL"))
+from .auth import verify_password, create_token, SECRET_KEY, ALGORITHM
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-# CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # set specific origin in production
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Dependency
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+
 def get_db():
     db = SessionLocal()
     try:
@@ -29,7 +29,20 @@ def get_db():
     finally:
         db.close()
 
-# Auth Routes
+def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    credentials_exception = HTTPException(status_code=401, detail="Invalid token")
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email = payload.get("sub")
+        if email is None:
+            raise credentials_exception
+        user = crud.get_user_by_email(db, email)
+        if user is None:
+            raise credentials_exception
+        return user
+    except JWTError:
+        raise credentials_exception
+
 @app.post("/signup")
 def signup(user: schemas.UserCreate, db: Session = Depends(get_db)):
     if crud.get_user_by_email(db, user.email):
@@ -45,14 +58,14 @@ def login(credentials: schemas.UserLogin, db: Session = Depends(get_db)):
     token = create_token(data={"sub": user.email, "username": user.username})
     return {"access_token": token, "token_type": "bearer"}
 
-# Product Routes
 @app.post("/products/", response_model=schemas.Product)
-def create_product(product: schemas.ProductCreate, db: Session = Depends(get_db)):
-    return crud.create_product(db, product)
+def create_product(product: schemas.ProductBase, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    product_data = schemas.ProductCreate(**product.dict(), user_id=current_user.id)
+    return crud.create_product(db, product_data)
 
 @app.get("/products/", response_model=list[schemas.Product])
-def get_all_products(db: Session = Depends(get_db)):
-    return crud.get_products(db)
+def get_all_products(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    return crud.get_products(db, user_id=current_user.id)
 
 @app.get("/products/{product_id}", response_model=schemas.Product)
 def get_product(product_id: int, db: Session = Depends(get_db)):

@@ -1,4 +1,3 @@
-# app/schemas.py
 from pydantic import BaseModel, EmailStr
 from datetime import date
 from typing import Optional
@@ -28,7 +27,7 @@ class ProductBase(BaseModel):
     dead_stock: Optional[bool] = False
 
 class ProductCreate(ProductBase):
-    pass
+    user_id: int
 
 class Product(ProductBase):
     id: int

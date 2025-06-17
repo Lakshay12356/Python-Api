@@ -1,9 +1,7 @@
-# app/crud.py
 from sqlalchemy.orm import Session
 from . import models, schemas
 from .auth import hash_password
 
-# Auth
 def create_user(db: Session, user: schemas.UserCreate):
     db_user = models.User(
         username=user.username,
@@ -18,7 +16,6 @@ def create_user(db: Session, user: schemas.UserCreate):
 def get_user_by_email(db: Session, email: str):
     return db.query(models.User).filter(models.User.email == email).first()
 
-# Product CRUD
 def create_product(db: Session, product: schemas.ProductCreate):
     db_product = models.Product(**product.dict())
     db.add(db_product)
@@ -26,8 +23,8 @@ def create_product(db: Session, product: schemas.ProductCreate):
     db.refresh(db_product)
     return db_product
 
-def get_products(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Product).offset(skip).limit(limit).all()
+def get_products(db: Session, user_id: int, skip: int = 0, limit: int = 100):
+    return db.query(models.Product).filter(models.Product.user_id == user_id).offset(skip).limit(limit).all()
 
 def get_product(db: Session, product_id: int):
     return db.query(models.Product).filter(models.Product.id == product_id).first()
