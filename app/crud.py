@@ -1,21 +1,27 @@
 from sqlalchemy.orm import Session
+from uuid import UUID
 from . import models, schemas
-from .auth import hash_password
+from passlib.context import CryptContext
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# User
+def get_user_by_email(db: Session, email: str):
+    return db.query(models.User).filter(models.User.email == email).first()
 
 def create_user(db: Session, user: schemas.UserCreate):
+    hashed_password = pwd_context.hash(user.password)
     db_user = models.User(
         username=user.username,
         email=user.email,
-        password=hash_password(user.password)
+        password=hashed_password
     )
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
     return db_user
 
-def get_user_by_email(db: Session, email: str):
-    return db.query(models.User).filter(models.User.email == email).first()
-
+# Product
 def create_product(db: Session, product: schemas.ProductCreate):
     db_product = models.Product(**product.dict())
     db.add(db_product)
@@ -23,22 +29,24 @@ def create_product(db: Session, product: schemas.ProductCreate):
     db.refresh(db_product)
     return db_product
 
-def get_products(db: Session, user_id: int, skip: int = 0, limit: int = 100):
-    return db.query(models.Product).filter(models.Product.user_id == user_id).offset(skip).limit(limit).all()
+def get_products(db: Session, user_id: UUID):
+    return db.query(models.Product).filter(models.Product.user_id == user_id).all()
 
-def get_product(db: Session, product_id: int):
+def get_product(db: Session, product_id: UUID):
     return db.query(models.Product).filter(models.Product.id == product_id).first()
 
-def update_product(db: Session, product_id: int, data: schemas.ProductCreate):
-    product = get_product(db, product_id)
-    for key, value in data.dict().items():
+def update_product(db: Session, product_id: UUID, updated_product: schemas.ProductCreate):
+    product = db.query(models.Product).filter(models.Product.id == product_id).first()
+    if not product:
+        return None
+    for key, value in updated_product.dict().items():
         setattr(product, key, value)
     db.commit()
     db.refresh(product)
     return product
 
-def delete_product(db: Session, product_id: int):
-    product = get_product(db, product_id)
-    db.delete(product)
-    db.commit()
-    return product
+def delete_product(db: Session, product_id: UUID):
+    product = db.query(models.Product).filter(models.Product.id == product_id).first()
+    if product:
+        db.delete(product)
+        db.commit()

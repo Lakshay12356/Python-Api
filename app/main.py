@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from jose import JWTError, jwt
+from uuid import UUID
 
 from . import models, schemas, crud
 from .database import engine, SessionLocal
@@ -68,17 +69,17 @@ def get_all_products(db: Session = Depends(get_db), current_user=Depends(get_cur
     return crud.get_products(db, user_id=current_user.id)
 
 @app.get("/products/{product_id}", response_model=schemas.Product)
-def get_product(product_id: int, db: Session = Depends(get_db)):
+def get_product(product_id: UUID, db: Session = Depends(get_db)):
     product = crud.get_product(db, product_id)
     if not product:
         raise HTTPException(status_code=404, detail="Not found")
     return product
 
 @app.put("/products/{product_id}", response_model=schemas.Product)
-def update_product(product_id: int, updated: schemas.ProductCreate, db: Session = Depends(get_db)):
+def update_product(product_id: UUID, updated: schemas.ProductCreate, db: Session = Depends(get_db)):
     return crud.update_product(db, product_id, updated)
 
 @app.delete("/products/{product_id}")
-def delete_product(product_id: int, db: Session = Depends(get_db)):
+def delete_product(product_id: UUID, db: Session = Depends(get_db)):
     crud.delete_product(db, product_id)
     return {"msg": "Deleted successfully"}

@@ -1,10 +1,12 @@
-from sqlalchemy import Column, Integer, String, Float, Date, Boolean, ForeignKey
+import uuid
+from sqlalchemy import Column, String, Float, Date, Boolean, ForeignKey, Integer
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from .database import Base
 
 class User(Base):
     __tablename__ = "users"
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     username = Column(String, nullable=False)
     email = Column(String, unique=True, index=True)
     password = Column(String, nullable=False)
@@ -13,7 +15,7 @@ class User(Base):
 
 class Product(Base):
     __tablename__ = "products"
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     supplier_code = Column(String)
     batch_number = Column(String)
     product_name = Column(String)
@@ -26,5 +28,5 @@ class Product(Base):
     date_of_purchase = Column(Date)
     dead_stock = Column(Boolean, default=False)
 
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     user = relationship("User", back_populates="products")
