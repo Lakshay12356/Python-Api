@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from uuid import UUID
 from . import models, schemas
 from passlib.context import CryptContext
+from datetime import datetime, timedelta
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -50,3 +51,17 @@ def delete_product(db: Session, product_id: UUID):
     if product:
         db.delete(product)
         db.commit()
+
+def update_dead_stock_status(db: Session):
+    six_months_ago = datetime.utcnow().date() - timedelta(days=180)
+
+    outdated_products = db.query(models.Product).filter(
+        models.Product.date_of_purchase < six_months_ago,
+        models.Product.dead_stock == False
+    ).all()
+
+    for product in outdated_products:
+        product.dead_stock = True
+
+    db.commit()
+    return len(outdated_products)
