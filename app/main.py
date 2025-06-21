@@ -84,11 +84,7 @@ def delete_product(product_id: UUID, db: Session = Depends(get_db)):
     crud.delete_product(db, product_id)
     return {"msg": "Deleted successfully"}
 
-@app.on_event("startup")
-def check_dead_stock_on_startup():
-    db = SessionLocal()
-    try:
-        updated_count = crud.update_dead_stock_status(db)
-        print(f"✔️ Dead stock updated: {updated_count} product(s)")
-    finally:
-        db.close()
+@app.get("/check-dead-stock")
+def check_dead_stock(db: Session = Depends(get_db)):
+    updated_count = crud.update_dead_stock_status(db)
+    return {"updated": updated_count}
