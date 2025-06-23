@@ -3,7 +3,7 @@ from sqlalchemy import Column, String, Float, Date, Boolean, ForeignKey, Integer
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from .database import Base
-
+from datetime import datetime
 class User(Base):
     __tablename__ = "users"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
@@ -30,3 +30,25 @@ class Product(Base):
 
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     user = relationship("User", back_populates="products")
+
+class DeliveryPartner(Base):
+    __tablename__ = "delivery_partners"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    name = Column(String, nullable=False)
+
+    deliveries = relationship("Delivery", back_populates="partner", cascade="all, delete")
+
+
+class Delivery(Base):
+    __tablename__ = "deliveries"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+
+    product_id = Column(UUID(as_uuid=True), ForeignKey("products.id"), nullable=False)
+    quantity = Column(Integer, nullable=False)
+
+    partner_id = Column(UUID(as_uuid=True), ForeignKey("delivery_partners.id"), nullable=False)
+    address = Column(String, nullable=False)
+    created_at = Column(Date, default=datetime.utcnow)
+
+    product = relationship("Product")
+    partner = relationship("DeliveryPartner", back_populates="deliveries")

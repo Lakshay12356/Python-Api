@@ -2,6 +2,7 @@ from pydantic import BaseModel, EmailStr
 from datetime import date
 from typing import Optional
 from uuid import UUID
+from datetime import datetime
 
 # Auth
 class UserCreate(BaseModel):
@@ -40,6 +41,38 @@ class ProductCreate(ProductBase):
 
 class Product(ProductBase):
     id: UUID
+
+    class Config:
+        orm_mode = True
+        
+# Delivery Partner
+class DeliveryPartnerBase(BaseModel):
+    name: str
+
+class DeliveryPartnerCreate(DeliveryPartnerBase):
+    pass
+
+class DeliveryPartner(DeliveryPartnerBase):
+    id: UUID
+
+    class Config:
+        orm_mode = True
+
+# Delivery
+class DeliveryBase(BaseModel):
+    product_id: UUID
+    quantity: int
+    partner_id: UUID
+    address: str
+
+class DeliveryCreate(DeliveryBase):
+    pass
+
+class Delivery(DeliveryBase):
+    id: UUID
+    created_at: date
+    product: Optional[Product] = None
+    partner: Optional[DeliveryPartner] = None
 
     class Config:
         orm_mode = True

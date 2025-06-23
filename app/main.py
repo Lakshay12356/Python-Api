@@ -4,7 +4,7 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from jose import JWTError, jwt
 from uuid import UUID
-
+from fastapi import status
 from . import models, schemas, crud
 from .database import engine, SessionLocal
 from .auth import verify_password, create_token, SECRET_KEY, ALGORITHM
@@ -88,3 +88,22 @@ def delete_product(product_id: UUID, db: Session = Depends(get_db)):
 def check_dead_stock(db: Session = Depends(get_db)):
     updated_count = crud.update_dead_stock_status(db)
     return {"updated": updated_count}
+
+@app.post("/delivery-partners/", response_model=schemas.DeliveryPartner)
+def create_partner(partner: schemas.DeliveryPartnerCreate, db: Session = Depends(get_db)):
+    return crud.create_delivery_partner(db, partner)
+
+@app.get("/delivery-partners/", response_model=list[schemas.DeliveryPartner])
+def list_partners(db: Session = Depends(get_db)):
+    return crud.get_all_partners(db)
+
+@app.post("/deliveries/", response_model=schemas.Delivery, status_code=status.HTTP_201_CREATED)
+def create_delivery(delivery: schemas.DeliveryCreate, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    try:
+        return crud.create_delivery(db, delivery)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/deliveries/", response_model=list[schemas.Delivery])
+def list_deliveries(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    return crud.get_all_deliveries(db)
