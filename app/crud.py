@@ -110,25 +110,23 @@ def create_delivery(db: Session, delivery: schemas.DeliveryCreate):
         quantity=new_delivery.quantity,
         address=new_delivery.address,
         created_at=new_delivery.created_at,
-        product=schemas.Product(
-            id=product.id,
-            supplier_code=product.supplier_code,
-            batch_number=product.batch_number,
-            product_name=product.product_name,
-            product_code=product.product_code,
-            category=product.category,
-            brand=product.brand,
-            purchase_price=product.purchase_price,
-            listing_price=product.listing_price,
-            units=product.units,
-            date_of_purchase=product.date_of_purchase,
-            dead_stock=product.dead_stock
-        ),
-        partner=schemas.DeliveryPartner(
-            id=partner.id,
-            name=partner.name
-        )
     )
 
 def get_all_deliveries(db: Session):
-    return db.query(models.Delivery).all()
+    deliveries = db.query(models.Delivery).all()
+    results = []
+
+    for d in deliveries:
+        product = db.query(models.Product).filter(models.Product.id == d.product_id).first()
+        partner = db.query(models.DeliveryPartner).filter(models.DeliveryPartner.id == d.partner_id).first()
+
+        results.append(schemas.Delivery(
+            id=d.id,
+            product_code=product.product_code,
+            partner_name=partner.name,
+            quantity=d.quantity,
+            address=d.address,
+            created_at=d.created_at
+        ))
+
+    return results

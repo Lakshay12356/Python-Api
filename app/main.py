@@ -105,5 +105,5 @@ def create_delivery(delivery: schemas.DeliveryCreate, db: Session = Depends(get_
         raise HTTPException(status_code=400, detail=str(e))
 
 @app.get("/deliveries/", response_model=list[schemas.Delivery])
-def list_deliveries(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+def get_deliveries(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     return crud.get_all_deliveries(db)

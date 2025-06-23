@@ -68,11 +68,13 @@ class DeliveryBase(BaseModel):
 class DeliveryCreate(DeliveryBase):
     pass
 
-class Delivery(DeliveryBase):
+class Delivery(BaseModel):
     id: UUID
+    product_code: str
+    partner_name: str
+    quantity: int
+    address: str
     created_at: date
-    product: Optional[Product] = None
-    partner: Optional[DeliveryPartner] = None
 
     class Config:
         orm_mode = True
