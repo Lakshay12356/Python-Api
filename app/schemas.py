@@ -44,7 +44,7 @@ class Product(ProductBase):
 
     class Config:
         orm_mode = True
-        
+
 # Delivery Partner
 class DeliveryPartnerBase(BaseModel):
     name: str
@@ -60,9 +60,9 @@ class DeliveryPartner(DeliveryPartnerBase):
 
 # Delivery
 class DeliveryBase(BaseModel):
-    product_id: UUID
+    product_code: str
     quantity: int
-    partner_id: UUID
+    partner_name: str
     address: str
 
 class DeliveryCreate(DeliveryBase):

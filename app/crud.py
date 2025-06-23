@@ -79,24 +79,23 @@ def get_all_partners(db: Session):
 
 # Delivery
 def create_delivery(db: Session, delivery: schemas.DeliveryCreate):
-    product = db.query(models.Product).filter(models.Product.id == delivery.product_id).first()
+    product = db.query(models.Product).filter(models.Product.product_code == delivery.product_code).first()
     if not product:
         raise ValueError("Product not found")
 
     if delivery.quantity > product.units:
         raise ValueError("Not enough units in stock")
 
-    partner = db.query(models.DeliveryPartner).filter(models.DeliveryPartner.id == delivery.partner_id).first()
+    partner = db.query(models.DeliveryPartner).filter(models.DeliveryPartner.name == delivery.partner_name).first()
     if not partner:
         raise ValueError("Delivery partner not found")
 
-    # Update product stock
     product.units -= delivery.quantity
 
     new_delivery = models.Delivery(
-        product_id=delivery.product_id,
+        product_id=product.id,
         quantity=delivery.quantity,
-        partner_id=delivery.partner_id,
+        partner_id=partner.id,
         address=delivery.address
     )
     db.add(new_delivery)
