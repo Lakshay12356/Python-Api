@@ -108,7 +108,7 @@ def create_delivery(delivery: schemas.DeliveryCreate, db: Session = Depends(get_
 def get_deliveries(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     return crud.get_all_deliveries(db)
 
-@app.post("/update-deliveries")
+@app.get("/update-deliveries")
 def update_old_deliveries(db: Session = Depends(get_db)):
     count = crud.auto_cancel_stale_deliveries(db)
     return {"cancelled_deliveries": count}
