@@ -112,3 +112,9 @@ def get_deliveries(db: Session = Depends(get_db), current_user=Depends(get_curre
 def update_old_deliveries(db: Session = Depends(get_db)):
     count = crud.auto_cancel_stale_deliveries(db)
     return {"cancelled_deliveries": count}
+    
+@app.get("/backfill-status")
+def backfill_status(db: Session = Depends(get_db)):
+    db.execute(text("UPDATE deliveries SET status = 'intransit' WHERE status IS NULL"))
+    db.commit()
+    return {"message": "Status backfilled for old deliveries"}
