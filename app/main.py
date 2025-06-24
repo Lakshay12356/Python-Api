@@ -112,9 +112,19 @@ def get_deliveries(db: Session = Depends(get_db), current_user=Depends(get_curre
 def update_old_deliveries(db: Session = Depends(get_db)):
     count = crud.auto_cancel_stale_deliveries(db)
     return {"cancelled_deliveries": count}
-    
-@app.get("/backfill-status")
-def backfill_status(db: Session = Depends(get_db)):
-    db.execute(text("UPDATE deliveries SET status = 'intransit' WHERE status IS NULL"))
-    db.commit()
-    return {"message": "Status backfilled for old deliveries"}
+
+@app.post("/backfill-status")
+def backfill_status_column(db: Session = Depends(get_db)):
+    try:
+        db.execute("ALTER TABLE deliveries ADD COLUMN status VARCHAR DEFAULT 'intransit' NOT NULL;")
+        db.commit()
+        return {"msg": "Status column added successfully"}
+    except ProgrammingError as pe:
+        db.rollback()
+        return Response(content=f"ProgrammingError: {str(pe)}", status_code=500)
+    except OperationalError as oe:
+        db.rollback()
+        return Response(content=f"OperationalError: {str(oe)}", status_code=500)
+    except SQLAlchemyError as se:
+        db.rollback()
+        return Response(content=f"SQLAlchemyError: {str(se)}", status_code=500)
