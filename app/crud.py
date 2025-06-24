@@ -96,19 +96,20 @@ def create_delivery(db: Session, delivery: schemas.DeliveryCreate):
         product_id=product.id,
         quantity=delivery.quantity,
         partner_id=partner.id,
-        address=delivery.address
+        address=delivery.address,
+        status="intransit",
     )
     db.add(new_delivery)
     db.commit()
     db.refresh(new_delivery)
 
-    # ✅ Return a proper Pydantic model with nested product and partner
     return schemas.Delivery(
         id=new_delivery.id,
         product_code=product.product_code,
         partner_name=partner.name,
         quantity=new_delivery.quantity,
         address=new_delivery.address,
+        status=new_delivery.status,
         created_at=new_delivery.created_at,
     )
 
@@ -126,7 +127,27 @@ def get_all_deliveries(db: Session):
             partner_name=partner.name,
             quantity=d.quantity,
             address=d.address,
+            status=d.status,
             created_at=d.created_at
         ))
 
     return results
+
+def auto_cancel_stale_deliveries(db: Session):
+    six_days_ago = datetime.utcnow().date() - timedelta(days=6)
+    
+    stale_deliveries = db.query(models.Delivery).filter(
+        models.Delivery.created_at < six_days_ago,
+        models.Delivery.status != "delivered",
+        models.Delivery.status != "cancelled"
+    ).all()
+
+    for d in stale_deliveries:
+        d.status = "cancelled"
+        # Optional: Restore product quantity
+        product = db.query(models.Product).filter(models.Product.id == d.product_id).first()
+        if product:
+            product.units += d.quantity
+
+    db.commit()
+    return len(stale_deliveries)

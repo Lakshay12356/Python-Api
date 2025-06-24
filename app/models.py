@@ -48,6 +48,8 @@ class Delivery(Base):
 
     partner_id = Column(UUID(as_uuid=True), ForeignKey("delivery_partners.id"), nullable=False)
     address = Column(String, nullable=False)
+
+    status = Column(String, nullable=False, default="intransit")
     created_at = Column(Date, default=datetime.utcnow)
 
     product = relationship("Product")

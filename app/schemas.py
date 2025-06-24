@@ -74,6 +74,7 @@ class Delivery(BaseModel):
     partner_name: str
     quantity: int
     address: str
+    status: str
     created_at: date
 
     class Config:
