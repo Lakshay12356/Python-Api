@@ -3,6 +3,9 @@ from uuid import UUID
 from . import models, schemas
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
+import os
+from fastapi import UploadFile
+from .models import Document
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -151,3 +154,30 @@ def auto_cancel_stale_deliveries(db: Session):
 
     db.commit()
     return len(stale_deliveries)
+
+UPLOAD_DIR = "uploaded_files"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+def save_document(db: Session, user_id: UUID, file: UploadFile):
+    file_id = str(uuid.uuid4())
+    ext = os.path.splitext(file.filename)[1]
+    new_filename = f"{file_id}{ext}"
+    file_path = os.path.join(UPLOAD_DIR, new_filename)
+
+    with open(file_path, "wb") as buffer:
+        buffer.write(file.file.read())
+
+    doc = Document(
+        id=file_id,
+        filename=file.filename,
+        file_type=file.content_type,
+        file_path=file_path,
+        user_id=user_id
+    )
+    db.add(doc)
+    db.commit()
+    db.refresh(doc)
+    return doc
+
+def get_documents_by_user(db: Session, user_id: UUID):
+    return db.query(Document).filter(Document.user_id == user_id).all()

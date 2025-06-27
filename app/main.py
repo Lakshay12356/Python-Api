@@ -128,3 +128,28 @@ def backfill_status_column(db: Session = Depends(get_db)):
     except SQLAlchemyError as se:
         db.rollback()
         return Response(content=f"SQLAlchemyError: {str(se)}", status_code=500)
+
+from fastapi import FastAPI, UploadFile, File, Form, Depends
+from sqlalchemy.orm import Session
+from uuid import UUID
+from app.database import get_db
+from app import crud
+
+app = FastAPI()
+
+@app.post("/upload-document")
+async def upload_document(
+    user_id: UUID = Form(...),
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    doc = crud.save_document(db=db, user_id=user_id, file=file)
+    return {
+        "message": "Upload successful",
+        "document_id": doc.id,
+        "filename": doc.filename
+    }
+
+@app.get("/users/{user_id}/documents")
+def get_documents(user_id: UUID, db: Session = Depends(get_db)):
+    return crud.get_documents_by_user(db=db, user_id=user_id)

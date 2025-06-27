@@ -12,6 +12,7 @@ class User(Base):
     password = Column(String, nullable=False)
 
     products = relationship("Product", back_populates="user", cascade="all, delete")
+    documents = relationship("Document", back_populates="user", cascade="all, delete")
 
 class Product(Base):
     __tablename__ = "products"
@@ -38,7 +39,6 @@ class DeliveryPartner(Base):
 
     deliveries = relationship("Delivery", back_populates="partner", cascade="all, delete")
 
-
 class Delivery(Base):
     __tablename__ = "deliveries"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
@@ -54,3 +54,15 @@ class Delivery(Base):
 
     product = relationship("Product")
     partner = relationship("DeliveryPartner", back_populates="deliveries")
+
+class Document(Base):
+    __tablename__ = "documents"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    filename = Column(String, nullable=False)
+    file_type = Column(String, nullable=False)
+    file_path = Column(String, nullable=False)
+    uploaded_at = Column(Date, default=datetime.utcnow)
+
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    user = relationship("User", back_populates="documents")
