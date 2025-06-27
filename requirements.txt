@@ -7,3 +7,4 @@ passlib[bcrypt]
 python-jose
 gunicorn
 pydantic[email]
+python-multipart
