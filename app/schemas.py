@@ -48,6 +48,8 @@ class Product(ProductBase):
 # Delivery Partner
 class DeliveryPartnerBase(BaseModel):
     name: str
+    phone_number: str
+    email: EmailStr
 
 class DeliveryPartnerCreate(DeliveryPartnerBase):
     pass

@@ -72,7 +72,11 @@ def update_dead_stock_status(db: Session):
 
 # Delivery Partner
 def create_delivery_partner(db: Session, partner: schemas.DeliveryPartnerCreate):
-    db_partner = models.DeliveryPartner(name=partner.name)
+    db_partner = models.DeliveryPartner(
+        name=partner.name
+        phone_number=partner.phone_number,
+        email=partner.email
+    )
     db.add(db_partner)
     db.commit()
     db.refresh(db_partner)

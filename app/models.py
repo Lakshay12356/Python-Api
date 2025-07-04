@@ -36,7 +36,8 @@ class DeliveryPartner(Base):
     __tablename__ = "delivery_partners"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     name = Column(String, unique=True, nullable=False)
-
+    phone_number = Column(String, nullable=False)
+    email = Column(String, nullable=False) 
     deliveries = relationship("Delivery", back_populates="partner", cascade="all, delete")
 
 class Delivery(Base):
